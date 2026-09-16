@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bank Account Dashboard</title>
+</head>
+<body>
+  <h1>Bank Account Management</h1>
+  <form id="account-form">
+    <input id="id" type="number" placeholder="Account ID" required />
+    <input id="account_holder" placeholder="Account holder" required />
+    <input id="account_type" placeholder="Account type" required />
+    <input id="balance" type="number" step="0.01" min="0" placeholder="Balance" required />
+    <button type="submit">Save Account</button>
+  </form>
+  <h2>Accounts</h2>
+  <table><thead><tr><th>ID</th><th>Holder</th><th>Type</th><th>Balance</th><th>Action</th></tr></thead><tbody id="account-table-body"></tbody></table>
+  <script>
+    const apiUrl = 'http://localhost:8000/accounts';
+    const form = document.getElementById('account-form');
+    const tableBody = document.getElementById('account-table-body');
+    async function fetchAccounts() {
+      const accounts = await (await fetch(apiUrl)).json();
+      tableBody.innerHTML = '';
+      accounts.forEach((account) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${account.id}</td><td>${account.account_holder}</td><td>${account.account_type}</td><td>$${account.balance.toFixed(2)}</td><td><button onclick="deleteAccount(${account.id})">Delete</button></td>`;
+        tableBody.appendChild(row);
+      });
+    }
+    async function deleteAccount(id) { await fetch(`${apiUrl}/${id}`, { method: 'DELETE' }); fetchAccounts(); }
+    form.addEventListener('submit', async (event) => { event.preventDefault(); const account = { id: Number(id.value), account_holder: account_holder.value, account_type: account_type.value, balance: Number(balance.value) }; await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(account) }); form.reset(); fetchAccounts(); });
+    fetchAccounts();
+  </script>
+</body>
+</html>
